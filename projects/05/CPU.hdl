@@ -1,0 +1,105 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Hack CPU (Central Processing unit), consisting of an ALU,
+ * two registers named A and D, and a program counter named PC.
+ * The CPU is designed to fetch and execute instructions written in 
+ * the Hack machine language. In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM==0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time step. If reset==1 then the 
+ * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+        And(a=instruction[15], b=true, out=isCInstruc);
+        Not(in=instruction[15], out=isAInstruc);
+
+        Mux16(
+            a=aluOut,
+            b[0..14]=instruction[0..14], b[15]=false,
+            sel=isAInstruc,
+            out=muxInstructionAlu
+        );
+
+        And(a=isCInstruc, b=instruction[5], out=isLoadACInstruc);
+        Or(a=isLoadACInstruc, b=isAInstruc, out=isLoadA);
+        ARegister(in=muxInstructionAlu, load=isLoadA, out=aOut);                    // A Register
+        And(a=isCInstruc, b=instruction[4], out=isLoadD);
+        DRegister(in=aluOut, load=isLoadD, out=dOut);                               // D Register
+
+        Mux16(a=aOut, b=inM, sel=instruction[12], out=muxAM);
+
+        ALU(
+            x=dOut, y=muxAM,
+            zx=instruction[11], nx=instruction[10],
+            zy=instruction[9], ny=instruction[8],
+            f=instruction[7], no=instruction[6],
+            zr=isZero, ng=isNeg,
+            out=aluOut
+        );
+
+        //// Jump Logic
+        Not(in=isNeg, out=notNeg);
+        Not(in=isZero, out=notZero);
+
+        Or(a=isNeg, b=isZero, out=orNegZero);
+        And(a=notNeg, b=notZero, out=isPos);
+        Or(a=notNeg, b=isZero, out=orPosZero);
+
+        And(a=isPos, b=instruction[0], out=jmpGreater);                             // Jump because > 0
+        And(a=isZero, b=instruction[1], out=jmpEqual);                              // Jump because = 0
+        And(a=orPosZero, b=instruction[0], out=jmpGreaterEqualHalf);
+        And(a=jmpGreaterEqualHalf, b=instruction[1], out=jmpGreaterEqual);          // Jump because >= 0
+        And(a=isNeg, b=instruction[2], out=jmpLesser);
+        And(a=notZero, b=instruction[0], out=jmpNotEqualHalf);
+        And(a=jmpNotEqualHalf, b=instruction[2], out=jmpNotEqual);                  // Jump because != 0
+        And(a=orNegZero, b=instruction[1], out=jmpLesserEqualHalf);
+        And(a=jmpLesserEqualHalf, b=instruction[2], out=jmpLesserEqual);            // Jump because <= 0
+        And(a=instruction[0], b=instruction[1], out=jmpAlwaysHalf);
+        And(a=jmpAlwaysHalf, b=instruction[2], out=jmpAlways);                      // Jump always
+
+        Or8Way(
+            in[0]=jmpGreater, in[1]=jmpEqual, in[2]=jmpGreaterEqual,
+            in[3]=jmpLesser, in[4]=jmpNotEqual, in[5]=jmpLesserEqual,
+            in[6]=jmpAlways, in[7]=false, out=couldJmp
+        );
+        And(a=couldJmp, b=isCInstruc, out=isJmp);
+
+        Not(in=isJmp, out=notIsJmp);
+        Not(in=reset, out=notReset);
+        Or(a=notIsJmp, b=notReset, out=isInc);
+
+        //// Outputs
+        PC(in=aOut, reset=reset, inc=isInc, load=isJmp, out[0..14]=pc);
+        And16(a=aluOut, b=true, out=outM);                                          // outM
+        And16(a=aOut, b=true, out[0..14]=addressM);                                 // addressM
+        And(a=isCInstruc, b=instruction[3], out=writeM);                            // writeM
+}
