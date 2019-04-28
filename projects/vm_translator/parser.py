@@ -77,12 +77,12 @@ class Parser(object):
                     yield tokens, cls.C_MEMORY
                 elif cmd in cls.FLOW_CONTROL_CMDS:
                     cls._assert_num_args(1, tokens[1:], cmd)
-                    yield tokens, cls.FLOW_CONTROL_CMDS
+                    yield tokens, cls.C_FLOW_CONTROL
                 elif cmd in cls.FUNCTION_CMDS:
                     if cmd == 'return':
                         cls._assert_num_args(0, tokens[1:], cmd)
                     else:
                         cls._assert_num_args(2, tokens[1:], cmd)
-                    yield tokens, cls.FUNCTION_CMDS
+                    yield tokens, cls.C_FUNCTION
                 else:
                     raise ParsingException(f'Unknown command "{cmd}"')

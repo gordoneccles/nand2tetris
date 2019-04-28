@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from runner import Runner
 
@@ -11,18 +12,16 @@ if __name__ == '__main__':
         'input_file',
         help='Name of vm file to convert.'
     )
-    parser.add_argument(
-        '--output-file',
-        default=None,
-        help='Name of output assembly file. Defaults to <input-suffix>.asm'
-    )
     args = parser.parse_args()
     input_fname = args.input_file
-    output_fname = args.output_file
-    if not input_fname.endswith('.vm'):
-        raise ValueError('Input file must be .vm')
-
-    if not output_fname:
+    if os.path.isfile(input_fname):
+        if not input_fname.endswith('.vm'):
+            raise ValueError('Input file must be .vm')
         output_fname = input_fname[:-2] + 'asm'
+    elif os.path.isdir(input_fname):
+        output_fname = os.path.join(
+            input_fname,
+            os.path.basename(input_fname.rstrip('/')) + '.asm',
+        )
 
     Runner(input_fname).run(output_fname)

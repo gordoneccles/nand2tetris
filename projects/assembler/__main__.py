@@ -11,18 +11,11 @@ if __name__ == '__main__':
         'input_file',
         help='Name of assembly file to convert.'
     )
-    parser.add_argument(
-        '--output-file',
-        default=None,
-        help='Name of output hack file. Defaults to <input-suffix>.hack'
-    )
     args = parser.parse_args()
     input_fname = args.input_file
-    output_fname = args.output_file
     if not input_fname.endswith('.asm'):
         raise ValueError('Input file must be .asm')
 
-    if not output_fname:
-        output_fname = input_fname[:-3] + 'hack'
+    output_fname = input_fname[:-3] + 'hack'
 
     Runner(input_fname).run(output_fname)
