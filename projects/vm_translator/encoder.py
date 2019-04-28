@@ -300,7 +300,6 @@ class FunctionEncoder(AbstractEncoder):
         for idx in range(int(n_vars)):
             m_enc = MemoryEncoder(self._class_scope)
             lines.extend(m_enc.encode(m_enc.PUSH, m_enc.SEG_CONSTANT, '0'))
-            # lines.extend(m_enc.encode(m_enc.POP, m_enc.SEG_LOCAL, str(idx)))
         return lines
 
     def _encode_call(self, func_name, n_vars):
