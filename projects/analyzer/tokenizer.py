@@ -57,19 +57,22 @@ INT_VAL = 'int_val'
 IDENTIFIER = 'identifier'
 
 
+Token = namedtuple('Token', ['value', 'type'])
+
+
 class Tokenizer(object):
 
     def __init__(self, jack_fname):
         self._jack_fname = jack_fname
-        self._stream = self._make_token_stream()
+        self._stream = self._token_stream()
 
-    def next_token_and_type(self):
+    def next_token(self):
         try:
             return next(self._stream)
         except StopIteration:
-            return
+            return None
 
-    def _make_token_stream(self):
+    def _token_stream(self):
         file_data = open(self._jack_fname, 'r').read()
         file_data = re.sub(r'//.*\n', '', file_data)
         file_data = re.sub(r'/\*\*.*\*/', '', file_data)
@@ -80,13 +83,13 @@ class Tokenizer(object):
             for char in course_token:
                 if char in SYMBOLS:
                     if token:
-                        yield token, self._type_for(token)
+                        yield Token(token, self._type_for(token))
                         token = ''
-                    yield char, SYMBOL
+                    yield Token(char, SYMBOL)
                 else:
                     token += char
             if token:
-                yield token, self._type_for(token)
+                yield Token(token, self._type_for(token))
                 token = ''
 
     def _type_for(self, token):
