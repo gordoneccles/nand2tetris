@@ -1,3 +1,4 @@
+from collections import namedtuple
 import re
 
 
@@ -60,17 +61,35 @@ IDENTIFIER = 'identifier'
 Token = namedtuple('Token', ['value', 'type'])
 
 
+class TokenizerException(Exception):
+    pass
+
+
 class Tokenizer(object):
 
     def __init__(self, jack_fname):
         self._jack_fname = jack_fname
         self._stream = self._token_stream()
+        self._tokens_so_far = []
+        self._rewind_ct = 0
 
     def next_token(self):
+        if self._rewind_ct > 0:
+            self._rewind_ct -= 1
+            return self._tokens_so_far[-(self._rewind_ct + 1)]
+
         try:
-            return next(self._stream)
+            token = next(self._stream)
+            self._tokens_so_far.append(token)
+            return token
         except StopIteration:
             return None
+
+    def rewind(self):
+        self._rewind_ct += 1
+
+        if self._rewind_ct > len(self._tokens_so_far):
+            raise TokenizerException('Cannot rewind any further.')
 
     def _token_stream(self):
         file_data = open(self._jack_fname, 'r').read()
