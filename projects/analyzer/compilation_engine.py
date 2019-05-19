@@ -8,8 +8,6 @@ class CompilationException(Exception):
     pass
 
 
-_indent = 0
-
 
 def _o_tag(s):
     return f'<{s}>'
@@ -21,29 +19,6 @@ def _c_tag(s):
 
 def _tagged(tag_name, s):
     return f'{_o_tag(tag_name)}{s}{_c_tag(tag_name)}\n'
-
-
-def _new_xml_section(section_name):
-
-    def _outer(fn):
-
-        def _inner(*args, **kwargs):
-            global _indent
-            f = args[1]
-            for _ in range(_indent):
-                f.write('\t')
-            f.write(_o_tag(section_name) + '\n')
-            _indent += 1
-            ret = fn(*args, **kwargs)
-            _indent -= 1
-            for _ in range(_indent):
-                f.write('\t')
-            f.write(_c_tag(section_name) + '\n')
-            return ret
-
-        return _inner
-
-    return _outer
 
 
 def _write(token, expect, f, tag):
@@ -61,9 +36,6 @@ def _write(token, expect, f, tag):
             f'Expected "{expect}", found "{token.value}".'
         )
 
-    global _indent
-    for _ in range(_indent):
-        f.write('\t')
     f.write(_tagged(tag, token.value))
 
 
@@ -90,9 +62,6 @@ def _write_identifier(token, f):
         raise CompilationException(
             f'Expected an {IDENTIFIER}, found {token.type}: "{token.value}"'
         )
-    global _indent
-    for _ in range(_indent):
-        f.write('\t')
     f.write(_tagged(IDENTIFIER, token.value))
 
 
@@ -107,7 +76,43 @@ def _write_type(token, f, include_void=False):
         _write_identifier(token, f)
 
 
+class IndentingFile(object):
+
+    def __init__(self, f):
+        self._f = f
+        self._indent = 0
+
+    def updent(self):
+        self._indent += 1
+
+    def dedent(self):
+        self._indent -= 1
+
+    def write(self, data):
+        for _ in range(self._indent):
+            self._f.write('\t')
+        self._f.write(data)
+
+
 class CompilationEngine(object):
+
+    class _new_xml_section(object):
+
+        def __init__(slf, section_name):
+            slf._section_name = section_name
+
+        def __call__(slf, fn):
+
+            def _wrapped(*args, **kwargs):
+                f = args[1]
+                f.write(_o_tag(slf._section_name) + '\n')
+                f.updent()
+                ret = fn(*args, **kwargs)
+                f.dedent()
+                f.write(_c_tag(slf._section_name) + '\n')
+                return ret
+
+            return _wrapped
 
     def __init__(self, jack_fname):
         self._jack_fname = jack_fname
@@ -115,7 +120,7 @@ class CompilationEngine(object):
     def compile(self, out_fname):
         tknizer = Tokenizer(self._jack_fname)
         with open(out_fname, 'w+') as f:
-            self._compile_tokens(f, tknizer)
+            self._compile_tokens(IndentingFile(f), tknizer)
 
     @_new_xml_section('tokens')
     def _compile_tokens(self, f, tknizer):
