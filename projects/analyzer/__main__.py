@@ -17,7 +17,7 @@ if __name__ == '__main__':
     if os.path.isfile(input_fname) and not input_fname.endswith('.jack'):
         raise ValueError('Input file must be .jack')
     elif os.path.isdir(input_fname) and not any(
-        f.endwith('.jack') for f in os.listdir(input_name)
+        f.endswith('.jack') for f in os.listdir(input_fname)
     ):
         raise ValueError('Directory contains no .jack files')
 

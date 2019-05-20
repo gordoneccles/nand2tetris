@@ -1,5 +1,7 @@
+import html
+
 from tokenizer import (
-    Tokenizer, SYMBOL, KEYWORD, STRING_VAL, INT_VAL, IDENTIFIER,
+    Tokenizer, SYMBOL, KEYWORD, STRING_CONSTANT, INT_CONSTANT, IDENTIFIER,
     TRUE, FALSE, NULL, THIS,
 )
 
@@ -24,19 +26,15 @@ def _tagged(tag_name, s):
 def _write(token, expect, f, tag):
     if isinstance(expect, list):
         if token.value not in expect:
-            f.seek(0)
-            print(f.read())
             raise CompilationException(
                 f'Expected "{expect}", found "{token.value}".'
             )
     elif token.value != expect:
-        f.seek(0)
-        print(f.read())
         raise CompilationException(
             f'Expected "{expect}", found "{token.value}".'
         )
 
-    f.write(_tagged(tag, token.value))
+    f.write(_tagged(tag, html.escape(token.value)))
 
 
 def _write_keyword(token, expect, f):
@@ -48,21 +46,20 @@ def _write_symbol(token, expect, f):
 
 
 def _write_int_val(token, f):
-    return _write(token, expect, f, INT_VAL)
+    return f.write(_tagged(INT_CONSTANT, html.escape(token.value)))
 
 
 def _write_string_val(token, f):
-    return _write(token, expect, f, STRING_VAL)
+    val = token.value[1:-1]
+    return f.write(_tagged(STRING_CONSTANT, html.escape(val)))
 
 
 def _write_identifier(token, f):
     if token.type != IDENTIFIER:
-        f.seek(0)
-        print(f.read())
         raise CompilationException(
             f'Expected an {IDENTIFIER}, found {token.type}: "{token.value}"'
         )
-    f.write(_tagged(IDENTIFIER, token.value))
+    f.write(_tagged(IDENTIFIER, html.escape(token.value)))
 
 
 def _write_type(token, f, include_void=False):
@@ -122,7 +119,6 @@ class CompilationEngine(object):
         with open(out_fname, 'w+') as f:
             self._compile_tokens(IndentingFile(f), tknizer)
 
-    @_new_xml_section('tokens')
     def _compile_tokens(self, f, tknizer):
         nxt_token = self._compile_class(f, tknizer, tknizer.next_token())
         if nxt_token:
@@ -302,15 +298,15 @@ class CompilationEngine(object):
         _write_symbol(token, ';', f)
         return tknizer.next_token()
 
-    @_new_xml_section('subroutineCall')
     def _compile_subroutine_call(self, f, tknizer, token):
         _write_identifier(token, f)
         token = tknizer.next_token()
         if token.value == '.':
             _write_symbol(token, '.', f)
             _write_identifier(tknizer.next_token(), f)
+            token = tknizer.next_token()
 
-        _write_symbol(tknizer.next_token(), '(', f)
+        _write_symbol(token, '(', f)
         token = self._compile_expression_list(f, tknizer, tknizer.next_token())
         _write_symbol(token, ')', f)
 
@@ -319,7 +315,7 @@ class CompilationEngine(object):
     @_new_xml_section('expressionList')
     def _compile_expression_list(self, f, tknizer, token):
         is_empty = True
-        if token.type in [INT_VAL, STRING_VAL]:
+        if token.type in [INT_CONSTANT, STRING_CONSTANT]:
             is_empty = False
         elif token.type == KEYWORD and token.value in [TRUE, FALSE, NULL, THIS]:
             is_empty = False
@@ -334,16 +330,16 @@ class CompilationEngine(object):
                 is_empty = False
             elif next_token.value in ['(', '.']:
                 is_empty = False
-            elif next_token.type == IDENTIFIER:
+            elif token.type == IDENTIFIER:
                 is_empty = False
 
         if is_empty:
             return token
 
         token = self._compile_expression(f, tknizer, token)
-        while token == ',':
+        while token.value == ',':
             _write_symbol(token, ',', f)
-            token = self._compile_expression(f, tknizer, token)
+            token = self._compile_expression(f, tknizer, tknizer.next_token())
 
         return token
 
@@ -359,10 +355,10 @@ class CompilationEngine(object):
 
     @_new_xml_section('term')
     def _compile_term(self, f, tknizer, token):
-        if token.type == INT_VAL:
+        if token.type == INT_CONSTANT:
             _write_int_val(token, f)
             return tknizer.next_token()
-        elif token.type == STRING_VAL:
+        elif token.type == STRING_CONSTANT:
             _write_string_val(token, f)
             return tknizer.next_token()
         elif token.type == KEYWORD and token.value in [TRUE, FALSE, NULL, THIS]:
@@ -375,14 +371,14 @@ class CompilationEngine(object):
             return tknizer.next_token()
         elif token.value in ['-', '~']:
             _write_symbol(token, ['-', '~'], f)
-            token = self._compile_term(f, tnkizer, tknizer.next_token())
+            token = self._compile_term(f, tknizer, tknizer.next_token())
             return token
         else:
             next_token = tknizer.next_token()
             if next_token.value == '[':
                 _write_identifier(token, f)
                 _write_symbol(next_token, '[', f)
-                token = self._compsile_expression(
+                token = self._compile_expression(
                     f, tknizer, tknizer.next_token()
                 )
                 _write_symbol(token, ']', f)

@@ -16,5 +16,5 @@ class Runner(object):
             jack_fnames = [self._in_fname]
 
         for jack_fname in jack_fnames:
-            out_fname = jack_fname[:-5] + '.xml'
+            out_fname = jack_fname[:-5] + '-test'+ '.xml'
             CompilationEngine(jack_fname).compile(out_fname)
