@@ -130,10 +130,6 @@ class Tokenizer(object):
                 token = ''
 
     def _type_for(self, token):
-        if token == 'string':
-            import pdb; pdb.set_trace()
-            a = 5
-
         if token in KEYWORDS:
             return KEYWORD
         elif re.match(r'^"[^"]*"$', token):
