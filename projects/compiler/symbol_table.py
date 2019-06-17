@@ -2,15 +2,15 @@ from collections import namedtuple
 from typing import Optional, Union
 
 
-Identifier = namedtuple('Identifier', ['name', 'typ', 'index'])
+Identifier = namedtuple("Identifier", ["name", "typ", "index"])
 
 
 class SymbolTable(object):
 
-    STATIC = 'STATIC'
-    FIELD = 'FIELD'
-    ARG = 'ARG'
-    VAR = 'VAR'
+    STATIC = "STATIC"
+    FIELD = "FIELD"
+    ARG = "ARG"
+    VAR = "VAR"
 
     def __init__(self):
         self._class_table = {}
@@ -22,14 +22,14 @@ class SymbolTable(object):
             self.VAR: 0,
         }
 
-    def start_subroutine(self): -> None
+    def start_subroutine(self) -> None:
         self._subroutine_table = {}
         self._next_index[self.ARG] = 0
         self._next_index[self.VAR] = 0
 
-    def define(self, name: str, typ: str, kind: str): -> None
+    def define(self, name: str, typ: str, kind: str) -> None:
         if kind not in self._next_indices:
-            raise ValueError(f'Unknown kind of identifier {kind}')
+            raise ValueError(f"Unknown kind of identifier {kind}")
 
         index = self._next_index[kind]
         self._next_index[kind] += 1
@@ -39,22 +39,25 @@ class SymbolTable(object):
         else:
             self._subroutine_table[name] = Identifier(name, typ, index)
 
-    def var_count(self, kind): -> int
+    def var_count(self, kind: str) -> int:
         if kind not in self._next_indices:
-            raise ValueError(f'Unknown kind of identifier {kind}')
+            raise ValueError(f"Unknown kind of identifier {kind}")
 
         return self._next_index[kind]
 
-    def kind_of(self, name): -> Optional[str]
-        return self._get(name 'kind')
+    def kind_of(self, name: str) -> Optional[str]:
+        return self._get(name, "kind")
 
-    def type_of(self, name): -> Optional[str]
-        return self._get(name 'typ')
+    def type_of(self, name: str) -> Optional[str]:
+        return self._get(name, "typ")
 
-    def index_of(self, name): -> Optional[int]
-        return self._get(name 'index')
+    def index_of(self, name: str) -> Optional[int]:
+        return self._get(name, "index")
 
-    def _get(self, name: str, attr: str): -> Union[str, int, None]
+    def has(self, name: str) -> bool:
+        return bool(self._get(name, "index"))
+
+    def _get(self, name: str, attr: str) -> Union[str, int, None]:
         if name in self._subroutine_table:
             return getattr(self._subroutine_table[name], attr)
         elif name in self._class_table:

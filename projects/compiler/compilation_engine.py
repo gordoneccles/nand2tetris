@@ -35,9 +35,13 @@ def _tagged(tag_name, s):
 def _assert(token, expect):
     if isinstance(expect, list):
         if token.value not in expect:
-            raise CompilationException(f'Expected "{expect}", found "{token.value}".')
+            raise CompilationException(
+                f'Expected "{expect}", found "{token.value}".'
+            )
     elif token.value != expect:
-        raise CompilationException(f'Expected "{expect}", found "{token.value}".')
+        raise CompilationException(
+            f'Expected "{expect}", found "{token.value}".'
+        )
 
 
 def _assert_identifier(token):
@@ -50,9 +54,13 @@ def _assert_identifier(token):
 def _write(token, expect, f, tag):
     if isinstance(expect, list):
         if token.value not in expect:
-            raise CompilationException(f'Expected "{expect}", found "{token.value}".')
+            raise CompilationException(
+                f'Expected "{expect}", found "{token.value}".'
+            )
     elif token.value != expect:
-        raise CompilationException(f'Expected "{expect}", found "{token.value}".')
+        raise CompilationException(
+            f'Expected "{expect}", found "{token.value}".'
+        )
 
     f.write(_tagged(tag, html.escape(token.value)))
 
@@ -124,6 +132,7 @@ class CompilationEngine(object):
         self._s_table = SymbolTable()
         self._writer = None
         self._class_name = None
+        self._is_writing_void_func = None
 
     def compile(self, out_fname):
         tknizer = Tokenizer(self._jack_fname)
@@ -131,7 +140,9 @@ class CompilationEngine(object):
             self._writer = writer
             nxt_token = self._compile_class(tknizer, tknizer.next_token())
             if nxt_token:
-                raise CompilationException(f"Expected end of file, found {nxt_token}")
+                raise CompilationException(
+                    f"Expected end of file, found {nxt_token}"
+                )
 
     def _compile_class(self, tknizer, token):
         _assert(token, "class")
@@ -159,11 +170,11 @@ class CompilationEngine(object):
 
         var_type = tknizer.next_token()
         _assert_type(var_type)
-        self._record_symbol(var_type, tknizer.next_token(), kind)
+        self._record_symbol(tknizer.next_token(), var_type, kind)
 
         token = tknizer.next_token()
         while token.value == ",":
-            self._record_symbol(var_type, tknizer.next_token(), kind)
+            self._record_symbol(tknizer.next_token(), var_type, kind)
             token = tknizer.next_token()
 
         _assert(token, ";")
@@ -175,7 +186,7 @@ class CompilationEngine(object):
 
         token = tknizer.next_token()
         _assert_type(token, allow_void=True)
-        return_type = token.value
+        self._is_writing_void_func = token.value == "void"
         self._s_table.start_subroutine()
 
         token = tknizer.next_token()
@@ -183,7 +194,6 @@ class CompilationEngine(object):
         subroutine_name = token.value
 
         _assert(tknizer.next_token(), "(")
-
         token = self._compile_parameter_list(tknizer, tknizer.next_token())
         _assert(token, ")")
 
@@ -194,14 +204,17 @@ class CompilationEngine(object):
             n_locals += 1
         qualified_name = ".".join(self._class_name, subroutine_name)
         self._writer.write_function(qualified_name, n_locals)
+        # TODO: memory allocation for constructors
         self._writer.flush_delayed()
-        if return_type == "void":
-            self._writer.write_push("constant", 0)
+        self._is_writing_void_func = None
 
         return token
 
     def _compile_parameter_list(self, tknizer, token):
-        if not (token.value in ["int", "char", "boolean"] or token.type == IDENTIFIER):
+        if not (
+            token.value in ["int", "char", "boolean"]
+            or token.type == IDENTIFIER
+        ):
             return token
 
         var_type = token.value
@@ -261,6 +274,7 @@ class CompilationEngine(object):
         var_name = token.value
 
         token = tknizer.next_token()
+        # TODO: implement array indexing
         if token.value == "[":
             token = self._compile_expression(tknizer, tknizer.next_token())
             _assert(token, "]")
@@ -269,71 +283,115 @@ class CompilationEngine(object):
         _assert(token, "=")
         token = self._compile_expression(tknizer, tknizer.next_token())
 
+        idx = self._s_table.index_of(var_name)
+        kind = self._s_table.kind_of(var_name)
+        self._writer.write_pop(kind, idx)
         _assert(token, ";")
         return tknizer.next_token()
 
     def _compile_if(self, f, tknizer, token):
-        _write_keyword(token, "if", f)
-        _write_symbol(tknizer.next_token(), "(", f)
-
+        _assert(token, "if")
+        _assert(tknizer.next_token(), "(")
         token = self._compile_expression(f, tknizer, tknizer.next_token())
-        _write_symbol(token, ")", f)
-        _write_symbol(tknizer.next_token(), "{", f)
+        _assert(token, ")")
+        _assert(tknizer.next_token(), "{")
 
-        token = self._compile_statements(f, tknizer, tknizer.next_token())
-        _write_symbol(token, "}", f)
+        self._writer.write_not()
+        false_label = self._allocate_label("IF_FALSE")
+        self._write.write_if(false_label)
+
+        token = self._compile_statements(tknizer, tknizer.next_token())
+        _assert(token, "}")
 
         token = tknizer.next_token()
         if token.value == "else":
-            _write_keyword(token, "else", f)
-
-            _write_symbol(tknizer.next_token(), "{", f)
-
-            token = self._compile_statements(f, tknizer, tknizer.next_token())
-            _write_symbol(token, "}", f)
+            skip_else_label = self._allocate_label("SKIP_ELSE")
+            self._writer.write_goto(skip_else_label)
+            self._writer.write_label(false_label)
+            _assert(tknizer.next_token(), "{")
+            token = self._compile_statements(tknizer, tknizer.next_token())
+            _assert(token, "}")
             token = tknizer.next_token()
+            self._writer.write_label(skip_else_label)
+        else:
+            self._writer.write_label(false_label)
 
         return token
 
-    def _compile_while(self, f, tknizer, token):
-        _write_keyword(token, "while", f)
-        _write_symbol(tknizer.next_token(), "(", f)
+    def _compile_while(self, tknizer, token):
+        _assert(token, "while")
+        _assert(tknizer.next_token(), "(")
+        true_label = self._allocate_label("WHILE_TRUE")
+        self._writer.write_label(true_label)
 
-        token = self._compile_expression(f, tknizer, tknizer.next_token())
-        _write_symbol(token, ")", f)
-        _write_symbol(tknizer.next_token(), "{", f)
+        token = self._compile_expression(tknizer, tknizer.next_token())
+        _write_symbol(token, ")")
+        _write_symbol(tknizer.next_token(), "{")
 
-        token = self._compile_statements(f, tknizer, tknizer.next_token())
-        _write_symbol(token, "}", f)
+        self._writer.write_not()
+        false_label = self._allocate_label("WHILE_FALSE")
+        self._write.write_if(false_label)
+
+        token = self._compile_statements(tknizer, tknizer.next_token())
+        _assert(token, "}")
+        self._writer.write_goto(true_label)
         return tknizer.next_token()
 
-    def _compile_do(self, f, tknizer, token):
-        _write_keyword(token, "do", f)
+    def _compile_do(self, tknizer, token):
+        _assert(token, "do")
 
-        token = self._compile_subroutine_call(f, tknizer, tknizer.next_token())
-        _write_symbol(token, ";", f)
+        token = self._compile_subroutine_call(tknizer, tknizer.next_token())
+        _assert(token, ";")
+        self._writer.write_pop("temp", 0)
         return tknizer.next_token()
 
-    def _compile_return(self, f, tknizer, token):
-        _write_keyword(token, "return", f)
+    def _compile_return(self, tknizer, token):
+        _assert(token, "return")
         token = tknizer.next_token()
-        if token.value != ";":
-            token = self._compile_expression(f, tknizer, token)
+        if self._is_writing_void_func is True:
+            _assert(token, ";")
+            self._writer.write_push("constant", 0)
+        elif self._is_writing_void_func is False:
+            token = self._compile_expression(tknizer, token)
+            _assert(token, ";")
+        else:
+            raise CompilationEngine(
+                "Encountered return statement outside function"
+            )
+        self._writer.write_return()
 
-        _write_symbol(token, ";", f)
         return tknizer.next_token()
 
-    def _compile_subroutine_call(self, f, tknizer, token):
-        _write_identifier(token, f)
+    def _compile_subroutine_call(self, tknizer, token):
+        _assert_identifier(token)
         token = tknizer.next_token()
+        is_method = True
+        cls_name = self._class_name
+        subroutine_name = token.value
+        last_val = token.value
+
         if token.value == ".":
-            _write_symbol(token, ".", f)
-            _write_identifier(tknizer.next_token(), f)
+            token = tknizer.next_token()
+            _assert_identifier(token)
+            if self._s_table.type_of(last_val):
+                cls_name = self._s_table.type_of(last_val)
+            else:
+                is_method = False
             token = tknizer.next_token()
 
-        _write_symbol(token, "(", f)
-        token = self._compile_expression_list(f, tknizer, tknizer.next_token())
-        _write_symbol(token, ")", f)
+        subroutine_name = ".".join([cls_name, subroutine_name])
+        if is_method:
+            this_addr = 0  # TODO: how do I find the address of the callee?
+            self._writer.write_push("constant", this_addr)
+
+        _assert(token, "(")
+        token, n_args = self._compile_expression_list(
+            tknizer, tknizer.next_token()
+        )
+        _assert(token, ")")
+        if is_method:
+            n_args += 1
+        self._writer.write_call(subroutine_name, n_args)
 
         return tknizer.next_token()
 
@@ -370,7 +428,9 @@ class CompilationEngine(object):
             if next_token.value == "[":
                 _write_identifier(token, f)
                 _write_symbol(next_token, "[", f)
-                token = self._compile_expression(f, tknizer, tknizer.next_token())
+                token = self._compile_expression(
+                    f, tknizer, tknizer.next_token()
+                )
                 _write_symbol(token, "]", f)
                 return tknizer.next_token()
             elif next_token.value in ["(", "."]:
@@ -383,6 +443,7 @@ class CompilationEngine(object):
     def _record_symbol(self, token, typ, kind):
         if token.type != IDENTIFIER:
             raise CompilationException(
-                f"Expected an {IDENTIFIER}, " 'found {token.type}: "{token.value}"'
+                f"Expected an {IDENTIFIER}, "
+                'found {token.type}: "{token.value}"'
             )
-        self._s_table.define(token.value, type, kind)
+        self._s_table.define(token.value, typ, kind)
