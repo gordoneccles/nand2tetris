@@ -34,6 +34,15 @@ class VMWriter(object):
     def write_neg(self) -> None:
         self._f.write("neg\n")
 
+    def write_equals(self) -> None:
+        self._f.write("eq\n")
+
+    def write_greater_than(self) -> None:
+        self._f.write("gt\n")
+
+    def write_less_than(self) -> None:
+        self._f.write("lt\n")
+
     def write_and(self) -> None:
         self._f.write("and\n")
 

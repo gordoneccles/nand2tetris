@@ -20,12 +20,13 @@ ARG = "ARG"
 THIS = "THIS"
 THAT = "THAT"
 
+SEG_STATIC = "static"
+SEG_THIS = "this"
 SEG_ARGUMENT = "argument"
 SEG_LOCAL = "local"
-SEG_THIS = "this"
+
 SEG_THAT = "that"
 SEG_POINTER = "pointer"
-SEG_STATIC = "static"
 SEG_CONSTANT = "constant"
 SEG_TEMP = "temp"
 
@@ -132,7 +133,9 @@ class MemoryEncoder(AbstractEncoder):
 
         if seg_name == SEG_CONSTANT:
             if cmd != PUSH:
-                raise EncodingException(f'Cannot apply "{cmd}" to constant segment.')
+                raise EncodingException(
+                    f'Cannot apply "{cmd}" to constant segment.'
+                )
             return self._encode_constant_seg(value)
         elif seg_name in self.POINTER_SEGMENTS_MAP:
             return self._encode_pointer_segs(cmd, seg_name, value)
@@ -256,7 +259,8 @@ class FunctionEncoder(AbstractEncoder):
         elif self.is_func_return(cmd):
             if len(args) != 0:
                 raise EncodingException(
-                    '"return" command takes no arguments.' " Received {}".format(args)
+                    '"return" command takes no arguments.'
+                    " Received {}".format(args)
                 )
             return self._encode_func_return()
         else:
@@ -280,7 +284,9 @@ class FunctionEncoder(AbstractEncoder):
         return_label = f"RETURN_FROM_{func_name}_{_call_label_ct}"
         _call_label_ct += 1
 
-        lines.extend([f"@{return_label}", "D=A"])  # push return address onto stack
+        lines.extend(
+            [f"@{return_label}", "D=A"]
+        )  # push return address onto stack
         lines.extend(_do_push())
 
         for ptr_addr in self.SAVED_CALLER_STATE:
