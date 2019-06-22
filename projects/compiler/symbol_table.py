@@ -15,17 +15,17 @@ class SymbolTable(object):
     def __init__(self):
         self._class_table = {}
         self._subroutine_table = None
-        self._next_indices = {
-            self.STATIC: 0,
-            self.FIELD: 0,
-            self.ARG: 0,
-            self.VAR: 0,
-        }
+        self._next_indices = {self.STATIC: 0, self.FIELD: 0}
 
-    def start_subroutine(self) -> None:
+    def start_subroutine(self, is_method: bool) -> None:
         self._subroutine_table = {}
-        self._next_index[self.ARG] = 0
+        self._next_index[self.ARG] = 1 if is_method else 0
         self._next_index[self.VAR] = 0
+
+    def complete_subroutine(self):
+        self._subroutine_table = None
+        del self._next_index[self.ARG]
+        del self._next_index[self.VAR]
 
     def define(self, name: str, typ: str, kind: str) -> None:
         if kind not in self._next_indices:

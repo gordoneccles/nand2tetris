@@ -1,9 +1,6 @@
-import html
-
 from symbol_table import SymbolTable
 from tokenizer import (
     Tokenizer,
-    SYMBOL,
     KEYWORD,
     STRING_CONSTANT,
     INT_CONSTANT,
@@ -18,18 +15,6 @@ from vm_writer import VMWriter
 
 class CompilationException(Exception):
     pass
-
-
-def _o_tag(s):
-    return f"<{s}>"
-
-
-def _c_tag(s):
-    return f"</{s}>"
-
-
-def _tagged(tag_name, s):
-    return f"{_o_tag(tag_name)}{s}{_c_tag(tag_name)}\n"
 
 
 def _assert(token, expect):
@@ -51,60 +36,12 @@ def _assert_identifier(token):
         )
 
 
-def _write(token, expect, f, tag):
-    if isinstance(expect, list):
-        if token.value not in expect:
-            raise CompilationException(
-                f'Expected "{expect}", found "{token.value}".'
-            )
-    elif token.value != expect:
-        raise CompilationException(
-            f'Expected "{expect}", found "{token.value}".'
-        )
-
-    f.write(_tagged(tag, html.escape(token.value)))
-
-
-def _write_keyword(token, expect, f):
-    return _write(token, expect, f, KEYWORD)
-
-
-def _write_symbol(token, expect, f):
-    return _write(token, expect, f, SYMBOL)
-
-
-def _write_int_val(token, f):
-    return f.write(_tagged(INT_CONSTANT, html.escape(token.value)))
-
-
-def _write_string_val(token, f):
-    val = token.value[1:-1]
-    return f.write(_tagged(STRING_CONSTANT, html.escape(val)))
-
-
 def _assert_type(token, allow_void=False):
     type_keywords = ["int", "char", "boolean"]
     if allow_void:
         type_keywords.append("void")
 
     _assert(token, type_keywords)
-
-
-class IndentingFile(object):
-    def __init__(self, f):
-        self._f = f
-        self._indent = 0
-
-    def updent(self):
-        self._indent += 1
-
-    def dedent(self):
-        self._indent -= 1
-
-    def write(self, data):
-        for _ in range(self._indent):
-            self._f.write("\t")
-        self._f.write(data)
 
 
 class BufferingWriter(object):
@@ -137,6 +74,7 @@ class CompilationEngine(object):
         self._writer = None
         self._class_name = None
         self._is_writing_void_func = None
+        self.self._n_labels = 0
 
     def compile(self, out_fname):
         tknizer = Tokenizer(self._jack_fname)
@@ -191,21 +129,23 @@ class CompilationEngine(object):
         token = tknizer.next_token()
         _assert_type(token, allow_void=True)
         self._is_writing_void_func = token.value == "void"
-        self._s_table.start_subroutine()
+        self._s_table.start_subroutine(is_method=subroutine_type == "method")
 
         token = tknizer.next_token()
         _assert_identifier(token)
         subroutine_name = token.value
 
         _assert(tknizer.next_token(), "(")
+        # populates symbol table with arguments
         token = self._compile_parameter_list(tknizer, tknizer.next_token())
         _assert(token, ")")
 
         _assert(token, "{")
         token = tknizer.next_token()
         while token.value == "var":
+            # populates symbol table with local variabls
             token = self._compile_var_dec(tknizer, token)
-        # compiling the var declarations populates the symbol table
+
         n_locals = self._s_table.var_count(SymbolTable.VAR)
         qualified_name = ".".join(self._class_name, subroutine_name)
         self._writer.write_function(qualified_name, n_locals)
@@ -221,11 +161,10 @@ class CompilationEngine(object):
 
         token = self._compile_statements(tknizer, token)
         _assert(token, "}")
-        token = tknizer.next_token()
-
         self._is_writing_void_func = None
+        self._s_table.complete_subroutine()
 
-        return token
+        return tknizer.next_token()
 
     def _compile_parameter_list(self, tknizer, token):
         if not (
@@ -237,7 +176,6 @@ class CompilationEngine(object):
         var_type = token.value
         token = tknizer.next_token()
         while True:
-            _assert_identifier(token)
             self._record_symbol(token, var_type, SymbolTable.ARG)
 
             token = tknizer.next_token()
@@ -252,14 +190,11 @@ class CompilationEngine(object):
         _assert_type(token)
         var_type = token.value
         token = tknizer.next_token()
-        _assert_identifier(token)
         self._record_symbol(token, var_type, SymbolTable.VAR)
 
         token = tknizer.next_token()
         while token.value == ",":
-            token = tknizer.next_token()
-            _assert_identifier(token)
-            self._record_symbol(token, var_type, SymbolTable.VAR)
+            self._record_symbol(tknizer.next_token(), var_type, SymbolTable.VAR)
             token = tknizer.next_token()
 
         _assert(token, ";")
@@ -282,16 +217,13 @@ class CompilationEngine(object):
         if token.value == "[":
             token = self._compile_expression(tknizer, tknizer.next_token())
             _assert(token, "]")
-            self._write_push_variable(var_name)
+            self._push_variable(var_name)
             self._writer.write_add()
             self._writer.write_pop("pointer", 1)
 
             _assert(tknizer.next_token(), "=")
             token = self._compile_expression(tknizer, tknizer.next_token())
             self._writer.write_pop("that", 0)
-
-            _assert(token, ";")
-            return tknizer.next_token()
         else:
             _assert(token, "=")
             token = self._compile_expression(tknizer, tknizer.next_token())
@@ -299,8 +231,8 @@ class CompilationEngine(object):
             kind = self._s_table.kind_of(var_name)
             self._writer.write_pop(kind, idx)
 
-            _assert(token, ";")
-            return tknizer.next_token()
+        _assert(token, ";")
+        return tknizer.next_token()
 
     def _compile_if(self, f, tknizer, token):
         _assert(token, "if")
@@ -311,7 +243,7 @@ class CompilationEngine(object):
 
         self._writer.write_not()
         false_label = self._allocate_label("IF_FALSE")
-        self._write.write_if(false_label)
+        self._writer.write_if(false_label)
 
         token = self._compile_statements(tknizer, tknizer.next_token())
         _assert(token, "}")
@@ -343,7 +275,7 @@ class CompilationEngine(object):
 
         self._writer.write_not()
         false_label = self._allocate_label("WHILE_FALSE")
-        self._write.write_if(false_label)
+        self._writer.write_if(false_label)
 
         token = self._compile_statements(tknizer, tknizer.next_token())
         _assert(token, "}")
@@ -352,7 +284,6 @@ class CompilationEngine(object):
 
     def _compile_do(self, tknizer, token):
         _assert(token, "do")
-
         token = self._compile_subroutine_call(tknizer, tknizer.next_token())
         _assert(token, ";")
         self._writer.write_pop("temp", 0)
@@ -398,24 +329,24 @@ class CompilationEngine(object):
         if first_arg_var == "this":
             self._writer.write_push("pointer", 0)
         elif first_arg_var:
-            self._write_push_variable(first_arg_var)
+            self._push_variable(first_arg_var)
 
         _assert(token, "(")
-        token, n_args = self._compile_expression_list(
-            tknizer, tknizer.next_token()
-        )
+        n_args = 0
+        token = tknizer.next_token()
+        if token.value != ")":
+            token = self._compile_expression(tknizer, tknizer.next_token())
+            n_args += 1
+            while token.value == ",":
+                token = self._compile_expression(tknizer, tknizer.next_token())
+                n_args += 1
+
         _assert(token, ")")
         if first_arg_var:
             n_args += 1
         self._writer.write_call(subroutine_name, n_args)
 
         return tknizer.next_token()
-
-    def _compile_expression_list(self, tknizer, token):
-        token = self._compile_expression(tknizer, token)
-        while token.value == ",":
-            token = self._compile_expression(tknizer, tknizer.next_token())
-        return token
 
     def _compile_expression(self, tknizer, token):
         token = self._compile_term(tknizer, token)
@@ -428,9 +359,9 @@ class CompilationEngine(object):
             elif op == "-":
                 self._writer.write_sub()
             elif op == "*":
-                self._writer.write_call("Math.multiply")
+                self._writer.write_call("Math.multiply", 2)
             elif op == "/":
-                self._writer.write_call("Math.divide")
+                self._writer.write_call("Math.divide", 2)
             elif op == "&":
                 self._writer.write_and()
             elif op == "|":
@@ -454,6 +385,7 @@ class CompilationEngine(object):
             return tknizer.next_token()
         elif token.type == STRING_CONSTANT:
             # TODO: write string
+            raise NotImplementedError()
             return tknizer.next_token()
         elif token.type == KEYWORD and token.value in [TRUE, FALSE, NULL, THIS]:
             if token.value == TRUE:
@@ -474,8 +406,12 @@ class CompilationEngine(object):
             next_token = self._compile_term(tknizer, tknizer.next_token())
             if token.value == "-":
                 self._writer.write_neg()
-            else:
+            elif token.value == "~":
                 self._writer.write_not()
+            else:
+                raise CompilationException(
+                    f"Bug: Unexpected unary op {token.value}"
+                )
             return next_token
         else:
             next_token = tknizer.next_token()
@@ -484,7 +420,7 @@ class CompilationEngine(object):
                 array_var_name = token.value
                 token = self._compile_expression(tknizer, tknizer.next_token())
                 _assert(token, "]")
-                self._write_push_variable(array_var_name)
+                self._push_variable(array_var_name)
                 self._write_add()
                 self._writer.write_pop("pointer", 1)
                 self._writer.write_push("that", 0)
@@ -498,10 +434,10 @@ class CompilationEngine(object):
                     raise CompilationException(
                         f"Unknown variable {token.value}"
                     )
-                self._write_push_variable(token.value)
+                self._push_variable(token.value)
                 return next_token
 
-    def _write_push_variable(self, var_name):
+    def _push_variable(self, var_name):
         idx = self._s_table.index_of(var_name)
         kind = self._s_table.kind_of(var_name)
         if kind == SymbolTable.STATIC:
@@ -514,6 +450,10 @@ class CompilationEngine(object):
             self._writer.write_push("local", idx)
         else:
             raise Exception(f"Bug: unexpected variable kind {kind}")
+
+    def _allocate_label(self, label_name):
+        return ",".join([self._class_name, self._n_labels, label_name])
+        self._n_labels += 1
 
     def _record_symbol(self, token, typ, kind):
         if token.type != IDENTIFIER:
