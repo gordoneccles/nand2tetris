@@ -6,10 +6,9 @@ from symbol_table import SymbolTable
 
 
 class Runner(object):
-
     @staticmethod
     def _is_symbol(val):
-        return bool(re.match(r'[a-zA-Z_\.\$:]+[a-zA-Z0-9_\.\$:]*', val))
+        return bool(re.match(r"[a-zA-Z_\.\$:]+[a-zA-Z0-9_\.\$:]*", val))
 
     def __init__(self, input_fname):
         self._in_fname = input_fname
@@ -32,9 +31,9 @@ class Runner(object):
         mem_addr = 16
         for tokens, instr_type in Parser.parse_lines(self._in_fname):
             if (
-                instr_type == Parser.A_INSTRUCTION and
-                self._is_symbol(tokens[0]) and
-                tokens[0] not in sym_tab
+                instr_type == Parser.A_INSTRUCTION
+                and self._is_symbol(tokens[0])
+                and tokens[0] not in sym_tab
             ):
                 sym_tab[tokens[0]] = mem_addr
                 mem_addr += 1
@@ -42,7 +41,7 @@ class Runner(object):
         return sym_tab
 
     def _write(self, out_fname, sym_tab):
-        with open(out_fname, 'w') as out_f:
+        with open(out_fname, "w") as out_f:
             for tokens, instr_type in Parser.parse_lines(self._in_fname):
                 if instr_type == Parser.A_INSTRUCTION:
                     if self._is_symbol(tokens[0]):
@@ -55,7 +54,7 @@ class Runner(object):
                     continue
                 else:
                     raise ValueError(
-                        f'Unexpected instruction type {instr_type}'
+                        f"Unexpected instruction type {instr_type}"
                     )
 
-                out_f.write('{}\n'.format(val))
+                out_f.write("{}\n".format(val))
