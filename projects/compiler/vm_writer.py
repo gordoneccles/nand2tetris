@@ -8,7 +8,7 @@ class VMWriter(object):
         self._delay_buffer = StringIO()
 
     def __enter__(self):
-        self._f = open(self._name, "w")
+        self._f = open(self._fname, "w")
         return self
 
     def __exit__(self, *args, **kwargs):
@@ -20,7 +20,7 @@ class VMWriter(object):
         self._delay_buffer.truncate()
 
     def write_push(self, segment: str, index: int) -> None:
-        self._f.write("push {segment} {index}\n")
+        self._f.write(f"push {segment} {index}\n")
 
     def write_pop(self, segment: str, index: int) -> None:
         self._f.write(f"pop {segment} {index}\n")
@@ -68,7 +68,7 @@ class VMWriter(object):
         self._f.write(f"function {name} {n_locals}\n")
 
     def write_return(self) -> None:
-        self._f.write(f"call\n")
+        self._f.write(f"return\n")
 
     def _write(self, data, delayed=False) -> None:
         if delayed:
