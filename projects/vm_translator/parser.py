@@ -7,45 +7,34 @@ class ParsingException(Exception):
 
 class Parser(object):
 
-    C_ARITHMETIC = 'C_ARITHMETIC'
-    C_MEMORY = 'C_MEMORY'
-    C_FLOW_CONTROL = 'C_FLOW_CONTROL'
-    C_FUNCTION = 'C_FUNCTION'
+    C_ARITHMETIC = "C_ARITHMETIC"
+    C_MEMORY = "C_MEMORY"
+    C_FLOW_CONTROL = "C_FLOW_CONTROL"
+    C_FUNCTION = "C_FUNCTION"
 
     ARITHMETIC_CMDS = [
-        'add',
-        'sub',
-        'neg',
-        'eq',
-        'gt',
-        'lt',
-        'and',
-        'or',
-        'not',
+        "add",
+        "sub",
+        "neg",
+        "eq",
+        "gt",
+        "lt",
+        "and",
+        "or",
+        "not",
     ]
-    MEMORY_CMDS = [
-        'push',
-        'pop',
-    ]
-    FLOW_CONTROL_CMDS = [
-        'label',
-        'goto',
-        'if-goto',
-    ]
-    FUNCTION_CMDS = [
-        'function',
-        'call',
-        'return',
-    ]
+    MEMORY_CMDS = ["push", "pop"]
+    FLOW_CONTROL_CMDS = ["label", "goto", "if-goto"]
+    FUNCTION_CMDS = ["function", "call", "return"]
 
     @staticmethod
     def _parse_line(line):
         line = line.strip()
-        if not line or line.startswith('//'):
+        if not line or line.startswith("//"):
             return
 
-        line = re.sub(r'\s*//.*$', '', line)
-        return re.split(r'\s+', line)
+        line = re.sub(r"\s*//.*$", "", line)
+        return re.split(r"\s+", line)
 
     @staticmethod
     def _assert_num_args(n_args, args, cmd):
@@ -62,7 +51,7 @@ class Parser(object):
 
     @classmethod
     def parse_lines(cls, fname):
-        with open(fname, 'r') as f:
+        with open(fname, "r") as f:
             for line in f:
                 tokens = cls._parse_line(line)
                 if not tokens:
@@ -79,7 +68,7 @@ class Parser(object):
                     cls._assert_num_args(1, tokens[1:], cmd)
                     yield tokens, cls.C_FLOW_CONTROL
                 elif cmd in cls.FUNCTION_CMDS:
-                    if cmd == 'return':
+                    if cmd == "return":
                         cls._assert_num_args(0, tokens[1:], cmd)
                     else:
                         cls._assert_num_args(2, tokens[1:], cmd)
