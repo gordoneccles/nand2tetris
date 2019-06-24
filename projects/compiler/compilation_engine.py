@@ -40,8 +40,11 @@ def _assert_type(token, allow_void=False):
     type_keywords = ["int", "char", "boolean"]
     if allow_void:
         type_keywords.append("void")
-
-    _assert(token, type_keywords)
+    if token.value not in type_keywords and token.type != IDENTIFIER:
+        raise CompilationException(
+            "Expected a primitive type or identifier, "
+            f'found {token.type}: "{token.value}"'
+        )
 
 
 class BufferingWriter(object):
@@ -111,8 +114,9 @@ class CompilationEngine(object):
         else:
             kind = SymbolTable.FIELD
 
-        var_type = tknizer.next_token()
-        _assert_type(var_type)
+        token = tknizer.next_token()
+        _assert_type(token)
+        var_type = token.value
         self._record_symbol(tknizer.next_token(), var_type, kind)
 
         token = tknizer.next_token()
@@ -295,7 +299,11 @@ class CompilationEngine(object):
             _assert(token, ";")
             self._writer.write_push("constant", 0)
         elif self._is_writing_void_func is False:
-            token = self._compile_expression(tknizer, token)
+            if token.value == "this":
+                self._writer.write_push("pointer", 0)
+                token = tknizer.next_token()
+            else:
+                token = self._compile_expression(tknizer, token)
             _assert(token, ";")
         else:
             raise CompilationEngine(
