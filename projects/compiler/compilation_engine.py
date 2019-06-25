@@ -223,10 +223,12 @@ class CompilationEngine(object):
             _assert(token, "]")
             self._push_variable(var_name)
             self._writer.write_add()
-            self._writer.write_pop("pointer", 1)
 
             _assert(tknizer.next_token(), "=")
             token = self._compile_expression(tknizer, tknizer.next_token())
+            self._writer.write_pop("temp", 0)
+            self._writer.write_pop("pointer", 1)
+            self._writer.write_push("temp", 0)
             self._writer.write_pop("that", 0)
         else:
             _assert(token, "=")
