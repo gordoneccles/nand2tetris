@@ -389,12 +389,12 @@ class CompilationEngine(object):
             self._writer.write_push("constant", token.value)
             return tknizer.next_token()
         elif token.type == STRING_CONSTANT:
-            str_val = token[1:-1]
+            str_val = token.value[1:-1]
             self._writer.write_push("constant", len(str_val))
             self._writer.write_call("String.new", 1)
             for char in str_val:
                 self._writer.write_push("constant", ord(char))
-                self._writer.write_call("String.append", 1)
+                self._writer.write_call("String.appendChar", 2)
             return tknizer.next_token()
         elif token.type == KEYWORD and token.value in [TRUE, FALSE, NULL, THIS]:
             if token.value == TRUE:
@@ -430,7 +430,7 @@ class CompilationEngine(object):
                 token = self._compile_expression(tknizer, tknizer.next_token())
                 _assert(token, "]")
                 self._push_variable(array_var_name)
-                self._write_add()
+                self._writer.write_add()
                 self._writer.write_pop("pointer", 1)
                 self._writer.write_push("that", 0)
                 return tknizer.next_token()

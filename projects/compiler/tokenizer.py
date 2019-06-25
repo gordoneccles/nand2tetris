@@ -117,6 +117,8 @@ class Tokenizer(object):
         token = ""
         in_str = False
         for course_token in course_tokens:
+            if in_str:
+                token += " "
             for char in course_token:
                 prev_char = token[-1] if token else None
                 if char == '"' and prev_char != "\\" and not in_str:
