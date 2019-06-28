@@ -1,0 +1,147 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Math.jack
+
+/**
+ * A library of commonly used mathematical functions.
+ * Note: Jack compilers implement multiplication and division using OS method calls.
+ */
+class Math {
+    static int WORD_SIZE;
+
+    /** Initializes the library. */
+    function void init() {
+      let WORD_SIZE = 16;
+      return;
+    }
+
+    /** Returns the absolute value of x. */
+    function int abs(int x) {
+      if (x < 0) {
+        let x = -x;
+      }
+      return x;
+    }
+
+    /** Returns the product of x and y.
+     *  When a Jack compiler detects the multiplication operator '*' in the
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x*y and multiply(x,y) return the same value.
+     */
+    function int multiply(int x, int y) {
+      var int sum, j, shiftedX, mask, jBit;
+      var boolean negX, negY;
+
+      let negX = false;
+      if (x < 0) {
+        let negX = true;
+        let x = -x;
+      }
+      let negY = false;
+      if (y < 0) {
+        let negY = true;
+        let y = -y;
+      }
+
+      let sum = 0;
+      let j = 0;
+      let shiftedX = x;
+      let mask = 1;
+
+      while (j < WORD_SIZE) {
+        let jBit = mask & y;
+
+        if (jBit > 0) {
+          let sum = sum + shiftedX;
+        }
+        let shiftedX = shiftedX + shiftedX;
+        let mask = mask + mask;
+        let j = j + 1;
+      }
+
+      if (~(negX = negY)) {
+        let sum = -sum;
+      }
+      return sum;
+    }
+
+    /** Returns the integer part of x/y.
+     *  When a Jack compiler detects the multiplication operator '/' in the
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x/y and divide(x,y) return the same value.
+     */
+    function int divide(int x, int y) {
+      var int q, result;
+      var boolean negX, negY;
+
+      let negX = false;
+      if (x < 0) {
+        let negX = true;
+        let x = -x;
+      }
+      let negY = false;
+      if (y < 0) {
+        let negY = true;
+        let y = -y;
+      }
+
+      if (y > x) {
+        return 0;
+      }
+
+      let q = x / (y + y);
+      let result = x - (2 * q * y);
+      if (result < y) {
+        let result = 2 * q;
+      } else {
+        let result = (2 * q) + 1;
+      }
+
+      if (~(negX = negY)) {
+        let result = -result;
+      }
+      return result;
+    }
+
+    /** Returns the integer part of the square root of x. */
+    function int sqrt(int x) {
+      var int y, j, i, result, square;
+
+      let j = (WORD_SIZE / 2) - 1;
+      let y = 0;
+      let square = 1;
+      while (j > -1) {
+        let i = 0;
+        let square = 1;
+        while (i < j) {
+          let square = square + square;
+          let i = i + 1;
+        }
+
+        let result = y + square;
+        let result = result * result;
+        if ((result - 1) < x) {
+          let y = y + square;
+        }
+        let j = j - 1;
+      }
+      return y;
+    }
+
+    /** Returns the greater number. */
+    function int max(int a, int b) {
+      if (a > b) {
+        return a;
+      }
+      return b;
+    }
+
+    /** Returns the smaller number. */
+    function int min(int a, int b) {
+      if (a < b) {
+        return a;
+      }
+      return b;
+    }
+}

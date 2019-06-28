@@ -1,0 +1,269 @@
+function Math.init 0
+push constant 16
+pop static 0
+push constant 0
+return
+function Math.abs 0
+push argument 0
+push constant 0
+lt
+not
+if-goto Math.abs$IF_FALSE$0
+push argument 0
+neg
+pop argument 0
+label Math.abs$IF_FALSE$0
+push argument 0
+return
+function Math.multiply 7
+push constant 0
+pop local 5
+push argument 0
+push constant 0
+lt
+not
+if-goto Math.multiply$IF_FALSE$1
+push constant 1
+neg
+pop local 5
+push argument 0
+neg
+pop argument 0
+label Math.multiply$IF_FALSE$1
+push constant 0
+pop local 6
+push argument 1
+push constant 0
+lt
+not
+if-goto Math.multiply$IF_FALSE$2
+push constant 1
+neg
+pop local 6
+push argument 1
+neg
+pop argument 1
+label Math.multiply$IF_FALSE$2
+push constant 0
+pop local 0
+push constant 0
+pop local 1
+push argument 0
+pop local 2
+push constant 1
+pop local 3
+label Math.multiply$WHILE_TRUE$3
+push local 1
+push static 0
+lt
+not
+if-goto Math.multiply$WHILE_FALSE$4
+push local 3
+push argument 1
+and
+pop local 4
+push local 4
+push constant 0
+gt
+not
+if-goto Math.multiply$IF_FALSE$5
+push local 0
+push local 2
+add
+pop local 0
+label Math.multiply$IF_FALSE$5
+push local 2
+push local 2
+add
+pop local 2
+push local 3
+push local 3
+add
+pop local 3
+push local 1
+push constant 1
+add
+pop local 1
+goto Math.multiply$WHILE_TRUE$3
+label Math.multiply$WHILE_FALSE$4
+push local 5
+push local 6
+eq
+not
+not
+if-goto Math.multiply$IF_FALSE$6
+push local 0
+neg
+pop local 0
+label Math.multiply$IF_FALSE$6
+push local 0
+return
+function Math.divide 4
+push constant 0
+pop local 2
+push argument 0
+push constant 0
+lt
+not
+if-goto Math.divide$IF_FALSE$7
+push constant 1
+neg
+pop local 2
+push argument 0
+neg
+pop argument 0
+label Math.divide$IF_FALSE$7
+push constant 0
+pop local 3
+push argument 1
+push constant 0
+lt
+not
+if-goto Math.divide$IF_FALSE$8
+push constant 1
+neg
+pop local 3
+push argument 1
+neg
+pop argument 1
+label Math.divide$IF_FALSE$8
+push argument 1
+push argument 0
+gt
+not
+if-goto Math.divide$IF_FALSE$9
+push constant 0
+return
+label Math.divide$IF_FALSE$9
+push argument 0
+push argument 1
+push argument 1
+add
+call Math.divide 2
+pop local 0
+push argument 0
+push constant 2
+push local 0
+call Math.multiply 2
+push argument 1
+call Math.multiply 2
+sub
+pop local 1
+push local 1
+push argument 1
+lt
+not
+if-goto Math.divide$IF_FALSE$10
+push constant 2
+push local 0
+call Math.multiply 2
+pop local 1
+goto Math.divide$SKIP_ELSE$11
+label Math.divide$IF_FALSE$10
+push constant 2
+push local 0
+call Math.multiply 2
+push constant 1
+add
+pop local 1
+label Math.divide$SKIP_ELSE$11
+push local 2
+push local 3
+eq
+not
+not
+if-goto Math.divide$IF_FALSE$12
+push local 1
+neg
+pop local 1
+label Math.divide$IF_FALSE$12
+push local 1
+return
+function Math.sqrt 5
+push static 0
+push constant 2
+call Math.divide 2
+push constant 1
+sub
+pop local 1
+push constant 0
+pop local 0
+push constant 1
+pop local 4
+label Math.sqrt$WHILE_TRUE$13
+push local 1
+push constant 1
+neg
+gt
+not
+if-goto Math.sqrt$WHILE_FALSE$14
+push constant 0
+pop local 2
+push constant 1
+pop local 4
+label Math.sqrt$WHILE_TRUE$15
+push local 2
+push local 1
+lt
+not
+if-goto Math.sqrt$WHILE_FALSE$16
+push local 4
+push local 4
+add
+pop local 4
+push local 2
+push constant 1
+add
+pop local 2
+goto Math.sqrt$WHILE_TRUE$15
+label Math.sqrt$WHILE_FALSE$16
+push local 0
+push local 4
+add
+pop local 3
+push local 3
+push local 3
+call Math.multiply 2
+pop local 3
+push local 3
+push constant 1
+sub
+push argument 0
+lt
+not
+if-goto Math.sqrt$IF_FALSE$17
+push local 0
+push local 4
+add
+pop local 0
+label Math.sqrt$IF_FALSE$17
+push local 1
+push constant 1
+sub
+pop local 1
+goto Math.sqrt$WHILE_TRUE$13
+label Math.sqrt$WHILE_FALSE$14
+push local 0
+return
+function Math.max 0
+push argument 0
+push argument 1
+gt
+not
+if-goto Math.max$IF_FALSE$18
+push argument 0
+return
+label Math.max$IF_FALSE$18
+push argument 1
+return
+function Math.min 0
+push argument 0
+push argument 1
+lt
+not
+if-goto Math.min$IF_FALSE$19
+push argument 0
+return
+label Math.min$IF_FALSE$19
+push argument 1
+return
