@@ -226,10 +226,14 @@ push local 3
 call Math.multiply 2
 pop local 3
 push local 3
+push constant 0
+gt
+push local 3
 push constant 1
 sub
 push argument 0
 lt
+and
 not
 if-goto Math.sqrt$IF_FALSE$17
 push local 0

@@ -121,7 +121,7 @@ class Math {
 
         let result = y + square;
         let result = result * result;
-        if ((result - 1) < x) {
+        if ((result > 0) & ((result - 1) < x)) {
           let y = y + square;
         }
         let j = j - 1;
