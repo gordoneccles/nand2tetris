@@ -1,0 +1,148 @@
+function Memory.init 0
+push constant 0
+pop static 0
+push constant 2048
+pop static 1
+push constant 2048
+pop static 2
+push static 1
+push static 0
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push static 1
+push constant 1
+add
+push static 0
+add
+push constant 16383
+push constant 2048
+sub
+push constant 2
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function Memory.peek 0
+push argument 0
+push static 0
+add
+pop pointer 1
+push that 0
+return
+function Memory.poke 0
+push argument 0
+push static 0
+add
+push argument 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function Memory.alloc 3
+push static 1
+pop local 2
+label Memory.alloc$WHILE_TRUE$0
+push constant 1
+neg
+not
+if-goto Memory.alloc$WHILE_FALSE$1
+push local 2
+push constant 1
+add
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 0
+push local 0
+push constant 1
+sub
+push argument 0
+push constant 2
+add
+gt
+not
+if-goto Memory.alloc$IF_FALSE$2
+push local 2
+push local 0
+add
+push constant 2
+add
+push argument 0
+sub
+push constant 2
+sub
+pop local 1
+push local 2
+push constant 1
+add
+push static 0
+add
+push local 0
+push argument 0
+sub
+push constant 2
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 1
+push static 0
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 1
+push constant 1
+add
+push static 0
+add
+push argument 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 1
+push constant 2
+sub
+return
+goto Memory.alloc$SKIP_ELSE$3
+label Memory.alloc$IF_FALSE$2
+push local 2
+push static 0
+add
+pop pointer 1
+push that 0
+pop local 2
+label Memory.alloc$SKIP_ELSE$3
+goto Memory.alloc$WHILE_TRUE$0
+label Memory.alloc$WHILE_FALSE$1
+function Memory.deAlloc 0
+push static 2
+push static 0
+add
+push argument 0
+push constant 2
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push constant 2
+sub
+pop static 2
+push constant 0
+return
