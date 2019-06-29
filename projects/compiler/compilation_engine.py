@@ -386,8 +386,6 @@ class CompilationEngine(object):
 
     def _compile_term(self, tknizer, token):
         if token.type == INT_CONSTANT:
-            if int(token.value) > 32767:
-                raise CompilationException(f"Integer overflow: {token.value}")
             self._writer.write_push("constant", token.value)
             return tknizer.next_token()
         elif token.type == STRING_CONSTANT:
