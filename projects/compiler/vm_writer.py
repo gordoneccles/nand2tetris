@@ -69,9 +69,3 @@ class VMWriter(object):
 
     def write_return(self) -> None:
         self._f.write(f"return\n")
-
-    def _write(self, data, delayed=False) -> None:
-        if delayed:
-            self._delay_buffer.write(data)
-        else:
-            self._f.write(data)
