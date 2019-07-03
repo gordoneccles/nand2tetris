@@ -9,7 +9,8 @@ pop this 2
 push argument 0
 push constant 0
 gt
-not
+push constant 0
+eq
 if-goto String.new$IF_FALSE$0
 push argument 0
 call Array.new 1
@@ -27,7 +28,8 @@ function String.dispose 0
 push argument 0
 pop pointer 0
 push this 0
-not
+push constant 0
+eq
 if-goto String.dispose$IF_FALSE$2
 push this 0
 call Array.dispose 1
@@ -51,7 +53,10 @@ push argument 1
 push this 1
 lt
 and
-not
+push this 0
+and
+push constant 0
+eq
 if-goto String.charAt$IF_FALSE$3
 push argument 1
 push this 0
@@ -73,7 +78,10 @@ push argument 1
 push this 1
 lt
 and
-not
+push this 0
+and
+push constant 0
+eq
 if-goto String.setCharAt$IF_FALSE$4
 push argument 1
 push this 0
@@ -92,7 +100,8 @@ pop pointer 0
 push this 1
 push this 2
 lt
-not
+push constant 0
+eq
 if-goto String.appendChar$IF_FALSE$5
 push this 1
 push this 0
@@ -115,7 +124,8 @@ pop pointer 0
 push this 1
 push constant 0
 gt
-not
+push constant 0
+eq
 if-goto String.eraseLastChar$IF_FALSE$6
 push this 1
 push constant 1
@@ -142,7 +152,8 @@ push local 0
 push constant 1
 neg
 gt
-not
+push constant 0
+eq
 if-goto String.intValue$WHILE_FALSE$8
 push local 0
 push this 0
@@ -153,7 +164,8 @@ pop local 2
 push local 2
 push constant 45
 eq
-not
+push constant 0
+eq
 if-goto String.intValue$IF_FALSE$9
 push constant 1
 neg
@@ -180,7 +192,8 @@ pop local 0
 goto String.intValue$WHILE_TRUE$7
 label String.intValue$WHILE_FALSE$8
 push local 4
-not
+push constant 0
+eq
 if-goto String.intValue$IF_FALSE$11
 push local 1
 neg
@@ -194,7 +207,8 @@ pop pointer 0
 push argument 1
 push constant 0
 eq
-not
+push constant 0
+eq
 if-goto String.setInt$IF_FALSE$12
 push constant 0
 push this 0
@@ -214,7 +228,8 @@ pop local 3
 push argument 1
 push constant 0
 lt
-not
+push constant 0
+eq
 if-goto String.setInt$IF_FALSE$13
 push argument 1
 neg
@@ -231,14 +246,16 @@ label String.setInt$WHILE_TRUE$14
 push argument 1
 push constant 0
 gt
-not
+push constant 0
+eq
 if-goto String.setInt$WHILE_FALSE$15
 push local 1
 push constant 1
 add
 push this 2
 gt
-not
+push constant 0
+eq
 if-goto String.setInt$IF_FALSE$16
 push constant 0
 return
@@ -276,7 +293,8 @@ pop argument 1
 goto String.setInt$WHILE_TRUE$14
 label String.setInt$WHILE_FALSE$15
 push local 3
-not
+push constant 0
+eq
 if-goto String.setInt$IF_FALSE$17
 push local 1
 push this 0
@@ -303,7 +321,8 @@ push this 1
 push constant 2
 call Math.divide 2
 lt
-not
+push constant 0
+eq
 if-goto String.setInt$WHILE_FALSE$19
 push local 1
 push this 0

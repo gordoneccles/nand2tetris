@@ -44,7 +44,7 @@ class String {
 
     /** Returns the character at the j-th location of this string. */
     method char charAt(int j) {
-      if ((j > -1) & (j < strLen)) {
+      if ((j > -1) & (j < strLen) & chars) {
         return chars[j];
       }
       return false;
@@ -52,7 +52,7 @@ class String {
 
     /** Sets the character at the j-th location of this string to c. */
     method void setCharAt(int j, char c) {
-      if ((j > -1) & (j < strLen)) {
+      if ((j > -1) & (j < strLen) & chars) {
         let chars[j] = c;
       }
       return;

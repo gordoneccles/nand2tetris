@@ -245,7 +245,8 @@ class CompilationEngine(object):
         _assert(token, ")")
         _assert(tknizer.next_token(), "{")
 
-        self._writer.write_not()
+        self._writer.write_push("constant", 0)
+        self._writer.write_equals()
         false_label = self._allocate_label("IF_FALSE")
         self._writer.write_if(false_label)
 
@@ -277,7 +278,8 @@ class CompilationEngine(object):
         _assert(token, ")")
         _assert(tknizer.next_token(), "{")
 
-        self._writer.write_not()
+        self._writer.write_push("constant", 0)
+        self._writer.write_equals()
         false_label = self._allocate_label("WHILE_FALSE")
         self._writer.write_if(false_label)
 
