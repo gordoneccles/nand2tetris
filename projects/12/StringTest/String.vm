@@ -1,4 +1,4 @@
-function String.new 0
+function String.new 1
 push constant 4
 call Memory.alloc 1
 pop pointer 0
@@ -9,17 +9,16 @@ pop this 2
 push argument 0
 push constant 0
 gt
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto String.new$IF_FALSE$0
 push argument 0
 call Array.new 1
 pop this 0
-goto IF_END0
-label IF_FALSE0
+goto String.new$SKIP_ELSE$1
+label String.new$IF_FALSE$0
 push constant 0
 pop this 0
-label IF_END0
+label String.new$SKIP_ELSE$1
 push constant 0
 pop this 1
 push pointer 0
@@ -28,13 +27,12 @@ function String.dispose 0
 push argument 0
 pop pointer 0
 push this 0
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto String.dispose$IF_FALSE$2
 push this 0
 call Array.dispose 1
 pop temp 0
-label IF_FALSE0
+label String.dispose$IF_FALSE$2
 push constant 0
 return
 function String.length 0
@@ -53,18 +51,15 @@ push argument 1
 push this 1
 lt
 and
-push this 0
-and
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto String.charAt$IF_FALSE$3
 push argument 1
 push this 0
 add
 pop pointer 1
 push that 0
 return
-label IF_FALSE0
+label String.charAt$IF_FALSE$3
 push constant 0
 return
 function String.setCharAt 0
@@ -78,11 +73,8 @@ push argument 1
 push this 1
 lt
 and
-push this 0
-and
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto String.setCharAt$IF_FALSE$4
 push argument 1
 push this 0
 add
@@ -91,18 +83,17 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-label IF_FALSE0
+label String.setCharAt$IF_FALSE$4
 push constant 0
 return
-function String.appendChar 0
+function String.appendChar 1
 push argument 0
 pop pointer 0
 push this 1
 push this 2
 lt
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto String.appendChar$IF_FALSE$5
 push this 1
 push this 0
 add
@@ -115,7 +106,7 @@ push this 1
 push constant 1
 add
 pop this 1
-label IF_FALSE0
+label String.appendChar$IF_FALSE$5
 push pointer 0
 return
 function String.eraseLastChar 0
@@ -124,14 +115,13 @@ pop pointer 0
 push this 1
 push constant 0
 gt
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto String.eraseLastChar$IF_FALSE$6
 push this 1
 push constant 1
 sub
 pop this 1
-label IF_FALSE0
+label String.eraseLastChar$IF_FALSE$6
 push constant 0
 return
 function String.intValue 5
@@ -147,13 +137,13 @@ push constant 1
 pop local 3
 push constant 0
 pop local 4
-label WHILE_EXP0
+label String.intValue$WHILE_TRUE$7
 push local 0
 push constant 1
 neg
 gt
 not
-if-goto WHILE_END0
+if-goto String.intValue$WHILE_FALSE$8
 push local 0
 push this 0
 add
@@ -163,14 +153,13 @@ pop local 2
 push local 2
 push constant 45
 eq
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
-push constant 0
 not
+if-goto String.intValue$IF_FALSE$9
+push constant 1
+neg
 pop local 4
-goto IF_END0
-label IF_FALSE0
+goto String.intValue$SKIP_ELSE$10
+label String.intValue$IF_FALSE$9
 push local 1
 push local 2
 push this 3
@@ -183,21 +172,20 @@ push local 3
 push constant 10
 call Math.multiply 2
 pop local 3
-label IF_END0
+label String.intValue$SKIP_ELSE$10
 push local 0
 push constant 1
 sub
 pop local 0
-goto WHILE_EXP0
-label WHILE_END0
+goto String.intValue$WHILE_TRUE$7
+label String.intValue$WHILE_FALSE$8
 push local 4
-if-goto IF_TRUE1
-goto IF_FALSE1
-label IF_TRUE1
+not
+if-goto String.intValue$IF_FALSE$11
 push local 1
 neg
 pop local 1
-label IF_FALSE1
+label String.intValue$IF_FALSE$11
 push local 1
 return
 function String.setInt 4
@@ -206,9 +194,8 @@ pop pointer 0
 push argument 1
 push constant 0
 eq
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto String.setInt$IF_FALSE$12
 push constant 0
 push this 0
 add
@@ -221,43 +208,41 @@ push constant 1
 pop this 1
 push constant 0
 return
-label IF_FALSE0
+label String.setInt$IF_FALSE$12
 push constant 0
 pop local 3
 push argument 1
 push constant 0
 lt
-if-goto IF_TRUE1
-goto IF_FALSE1
-label IF_TRUE1
+not
+if-goto String.setInt$IF_FALSE$13
 push argument 1
 neg
 pop argument 1
-push constant 0
-not
+push constant 1
+neg
 pop local 3
-label IF_FALSE1
+label String.setInt$IF_FALSE$13
 push constant 0
 pop this 1
 push constant 0
 pop local 1
-label WHILE_EXP0
+label String.setInt$WHILE_TRUE$14
 push argument 1
 push constant 0
 gt
 not
-if-goto WHILE_END0
+if-goto String.setInt$WHILE_FALSE$15
 push local 1
 push constant 1
 add
 push this 2
 gt
-if-goto IF_TRUE2
-goto IF_FALSE2
-label IF_TRUE2
+not
+if-goto String.setInt$IF_FALSE$16
 push constant 0
 return
-label IF_FALSE2
+label String.setInt$IF_FALSE$16
 push argument 1
 push argument 1
 push constant 10
@@ -288,12 +273,11 @@ push argument 1
 push constant 10
 call Math.divide 2
 pop argument 1
-goto WHILE_EXP0
-label WHILE_END0
+goto String.setInt$WHILE_TRUE$14
+label String.setInt$WHILE_FALSE$15
 push local 3
-if-goto IF_TRUE3
-goto IF_FALSE3
-label IF_TRUE3
+not
+if-goto String.setInt$IF_FALSE$17
 push local 1
 push this 0
 add
@@ -310,17 +294,17 @@ push local 1
 push constant 1
 add
 pop local 1
-label IF_FALSE3
+label String.setInt$IF_FALSE$17
 push constant 0
 pop local 1
-label WHILE_EXP1
+label String.setInt$WHILE_TRUE$18
 push local 1
 push this 1
 push constant 2
 call Math.divide 2
 lt
 not
-if-goto WHILE_END1
+if-goto String.setInt$WHILE_FALSE$19
 push local 1
 push this 0
 add
@@ -359,8 +343,8 @@ push local 1
 push constant 1
 add
 pop local 1
-goto WHILE_EXP1
-label WHILE_END1
+goto String.setInt$WHILE_TRUE$18
+label String.setInt$WHILE_FALSE$19
 push constant 0
 return
 function String.newLine 0

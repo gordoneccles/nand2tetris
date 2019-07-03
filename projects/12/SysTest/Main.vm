@@ -157,27 +157,27 @@ push constant 58
 call String.appendChar 2
 call Output.printString 1
 pop temp 0
-label WHILE_EXP0
+label Main.main$WHILE_TRUE$0
 push local 0
 push constant 0
 eq
 not
-if-goto WHILE_END0
+if-goto Main.main$WHILE_FALSE$1
 call Keyboard.keyPressed 0
 pop local 0
-goto WHILE_EXP0
-label WHILE_END0
-label WHILE_EXP1
+goto Main.main$WHILE_TRUE$0
+label Main.main$WHILE_FALSE$1
+label Main.main$WHILE_TRUE$2
 push local 0
 push constant 0
 eq
 not
 not
-if-goto WHILE_END1
+if-goto Main.main$WHILE_FALSE$3
 call Keyboard.keyPressed 0
 pop local 0
-goto WHILE_EXP1
-label WHILE_END1
+goto Main.main$WHILE_TRUE$2
+label Main.main$WHILE_FALSE$3
 push constant 2000
 call Sys.wait 1
 pop temp 0

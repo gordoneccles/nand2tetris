@@ -17,6 +17,7 @@ class String {
     /** constructs a new empty string with a maximum length of maxLength
      *  and initial length of 0. */
     constructor String new(int maxLength) {
+      var int dummy;
       let asciiDigitsStart = 48;
       let maxLen = maxLength;
       if (maxLength > 0) {
@@ -43,7 +44,7 @@ class String {
 
     /** Returns the character at the j-th location of this string. */
     method char charAt(int j) {
-      if ((j > -1) & (j < strLen) & chars) {
+      if ((j > -1) & (j < strLen)) {
         return chars[j];
       }
       return false;
@@ -51,7 +52,7 @@ class String {
 
     /** Sets the character at the j-th location of this string to c. */
     method void setCharAt(int j, char c) {
-      if ((j > -1) & (j < strLen) & chars) {
+      if ((j > -1) & (j < strLen)) {
         let chars[j] = c;
       }
       return;
@@ -59,6 +60,7 @@ class String {
 
     /** Appends c to this string's end and returns this string. */
     method String appendChar(char c) {
+      var int dummy;
       if (strLen < maxLen) {
         let chars[strLen] = c;
         let strLen = strLen + 1;

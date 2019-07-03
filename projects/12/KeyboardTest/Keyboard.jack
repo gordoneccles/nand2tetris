@@ -69,14 +69,18 @@ class Keyboard {
       let input = String.new(64);
       while (true) {
         let nextChar = Keyboard.readChar();
-        do input.appendChar(nextChar);
+
         if (nextChar = String.newLine()) {
-          do Output.printString(input);
+          do Output.printChar(nextChar);
           return input;
         }
+
         if (nextChar = String.backSpace()) {
           do Output.backSpace();
           do input.eraseLastChar();
+        } else {
+          do input.appendChar(nextChar);
+          do Output.printChar(nextChar);
         }
       }
     }
@@ -89,7 +93,7 @@ class Keyboard {
      */
     function int readInt(String message) {
       var String input;
-      let input = Keyboard.readString(message);
+      let input = Keyboard.readLine(message);
       return input.intValue();
     }
 }

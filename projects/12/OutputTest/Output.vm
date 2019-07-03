@@ -32,12 +32,12 @@ push constant 1
 pop static 12
 push constant 0
 pop local 0
-label WHILE_EXP0
+label Output.init$WHILE_TRUE$0
 push local 0
 push constant 8
 lt
 not
-if-goto WHILE_END0
+if-goto Output.init$WHILE_FALSE$1
 push static 11
 push static 11
 add
@@ -52,8 +52,8 @@ push local 0
 push constant 1
 add
 pop local 0
-goto WHILE_EXP0
-label WHILE_END0
+goto Output.init$WHILE_TRUE$0
+label Output.init$WHILE_FALSE$1
 push static 12
 push constant 2
 call Math.divide 2
@@ -1522,12 +1522,11 @@ push argument 0
 push constant 126
 gt
 or
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto Output.getMap$IF_FALSE$2
 push constant 0
 pop argument 0
-label IF_FALSE0
+label Output.getMap$IF_FALSE$2
 push argument 0
 push static 0
 add
@@ -1544,17 +1543,16 @@ call Math.multiply 2
 sub
 push constant 0
 gt
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
-push constant 0
-pop local 6
-goto IF_END0
-label IF_FALSE0
-push constant 0
 not
+if-goto Output.fillCursor$IF_FALSE$3
+push constant 0
 pop local 6
-label IF_END0
+goto Output.fillCursor$SKIP_ELSE$4
+label Output.fillCursor$IF_FALSE$3
+push constant 1
+neg
+pop local 6
+label Output.fillCursor$SKIP_ELSE$4
 push argument 0
 call Output.getMap 1
 pop local 0
@@ -1562,7 +1560,7 @@ call Output.cursorStartAddr 0
 pop local 1
 push constant 0
 pop local 4
-label WHILE_EXP0
+label Output.fillCursor$WHILE_TRUE$5
 push local 4
 push static 8
 lt
@@ -1571,7 +1569,7 @@ push static 9
 lt
 and
 not
-if-goto WHILE_END0
+if-goto Output.fillCursor$WHILE_FALSE$6
 push local 4
 push local 0
 add
@@ -1582,15 +1580,14 @@ push local 1
 call Memory.peek 1
 pop local 2
 push local 6
-if-goto IF_TRUE1
-goto IF_FALSE1
-label IF_TRUE1
+not
+if-goto Output.fillCursor$IF_FALSE$7
 push local 2
 push static 11
 and
 pop local 2
-goto IF_END1
-label IF_FALSE1
+goto Output.fillCursor$SKIP_ELSE$8
+label Output.fillCursor$IF_FALSE$7
 push local 2
 push static 12
 and
@@ -1599,7 +1596,7 @@ push local 3
 push constant 8
 call Output.leftShift 2
 pop local 3
-label IF_END1
+label Output.fillCursor$SKIP_ELSE$8
 push local 2
 push local 3
 or
@@ -1616,8 +1613,8 @@ push local 4
 push constant 1
 add
 pop local 4
-goto WHILE_EXP0
-label WHILE_END0
+goto Output.fillCursor$WHILE_TRUE$5
+label Output.fillCursor$WHILE_FALSE$6
 push constant 0
 return
 function Output.moveCursor 0
@@ -1650,12 +1647,12 @@ return
 function Output.leftShift 1
 push constant 0
 pop local 0
-label WHILE_EXP0
+label Output.leftShift$WHILE_TRUE$9
 push local 0
 push argument 1
 lt
 not
-if-goto WHILE_END0
+if-goto Output.leftShift$WHILE_FALSE$10
 push argument 0
 push argument 0
 add
@@ -1664,8 +1661,8 @@ push local 0
 push constant 1
 add
 pop local 0
-goto WHILE_EXP0
-label WHILE_END0
+goto Output.leftShift$WHILE_TRUE$9
+label Output.leftShift$WHILE_FALSE$10
 push argument 0
 return
 function Output.printChar 0
@@ -1677,32 +1674,31 @@ push constant 1
 add
 push static 10
 eq
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto Output.printChar$IF_FALSE$11
 call Output.println 0
 pop temp 0
-goto IF_END0
-label IF_FALSE0
+goto Output.printChar$SKIP_ELSE$12
+label Output.printChar$IF_FALSE$11
 push static 2
 push static 1
 push constant 1
 add
 call Output.moveCursor 2
 pop temp 0
-label IF_END0
+label Output.printChar$SKIP_ELSE$12
 push constant 0
 return
 function Output.printString 1
 push constant 0
 pop local 0
-label WHILE_EXP0
+label Output.printString$WHILE_TRUE$13
 push local 0
 push argument 0
 call String.length 1
 lt
 not
-if-goto WHILE_END0
+if-goto Output.printString$WHILE_FALSE$14
 push argument 0
 push local 0
 call String.charAt 2
@@ -1712,8 +1708,8 @@ push local 0
 push constant 1
 add
 pop local 0
-goto WHILE_EXP0
-label WHILE_END0
+goto Output.printString$WHILE_TRUE$13
+label Output.printString$WHILE_FALSE$14
 push constant 0
 return
 function Output.printInt 1
@@ -1735,37 +1731,35 @@ push constant 1
 add
 push static 9
 eq
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto Output.println$IF_FALSE$15
 push constant 0
 push constant 0
 call Output.moveCursor 2
 pop temp 0
-goto IF_END0
-label IF_FALSE0
+goto Output.println$SKIP_ELSE$16
+label Output.println$IF_FALSE$15
 push static 2
 push constant 1
 add
 push constant 0
 call Output.moveCursor 2
 pop temp 0
-label IF_END0
+label Output.println$SKIP_ELSE$16
 push constant 0
 return
 function Output.backSpace 0
 push static 1
 push constant 0
 gt
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto Output.backSpace$IF_FALSE$17
 push static 2
 push static 1
 push constant 1
 sub
 call Output.moveCursor 2
 pop temp 0
-label IF_FALSE0
+label Output.backSpace$IF_FALSE$17
 push constant 0
 return

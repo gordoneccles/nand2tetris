@@ -1,0 +1,89 @@
+function Keyboard.init 0
+push constant 24576
+pop static 0
+push constant 0
+return
+function Keyboard.keyPressed 0
+push static 0
+call Memory.peek 1
+return
+function Keyboard.readChar 1
+push constant 0
+pop local 0
+label Keyboard.readChar$WHILE_TRUE$0
+push local 0
+push constant 0
+eq
+not
+if-goto Keyboard.readChar$WHILE_FALSE$1
+call Keyboard.keyPressed 0
+pop local 0
+goto Keyboard.readChar$WHILE_TRUE$0
+label Keyboard.readChar$WHILE_FALSE$1
+label Keyboard.readChar$WHILE_TRUE$2
+call Keyboard.keyPressed 0
+push constant 0
+eq
+not
+not
+if-goto Keyboard.readChar$WHILE_FALSE$3
+push local 0
+pop local 0
+goto Keyboard.readChar$WHILE_TRUE$2
+label Keyboard.readChar$WHILE_FALSE$3
+push local 0
+return
+function Keyboard.readLine 2
+push argument 0
+call Output.printString 1
+pop temp 0
+push constant 64
+call String.new 1
+pop local 0
+label Keyboard.readLine$WHILE_TRUE$4
+push constant 1
+neg
+not
+if-goto Keyboard.readLine$WHILE_FALSE$5
+call Keyboard.readChar 0
+pop local 1
+push local 1
+call String.newLine 0
+eq
+not
+if-goto Keyboard.readLine$IF_FALSE$6
+push local 1
+call Output.printChar 1
+pop temp 0
+push local 0
+return
+label Keyboard.readLine$IF_FALSE$6
+push local 1
+call String.backSpace 0
+eq
+not
+if-goto Keyboard.readLine$IF_FALSE$7
+call Output.backSpace 0
+pop temp 0
+push local 0
+call String.eraseLastChar 1
+pop temp 0
+goto Keyboard.readLine$SKIP_ELSE$8
+label Keyboard.readLine$IF_FALSE$7
+push local 0
+push local 1
+call String.appendChar 2
+pop temp 0
+push local 1
+call Output.printChar 1
+pop temp 0
+label Keyboard.readLine$SKIP_ELSE$8
+goto Keyboard.readLine$WHILE_TRUE$4
+label Keyboard.readLine$WHILE_FALSE$5
+function Keyboard.readInt 1
+push argument 0
+call Keyboard.readLine 1
+pop local 0
+push local 0
+call String.intValue 1
+return

@@ -39,11 +39,11 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-label WHILE_EXP0
+label Main.main$WHILE_TRUE$0
 push local 4
 not
 not
-if-goto WHILE_END0
+if-goto Main.main$WHILE_FALSE$1
 push constant 32
 call String.new 1
 push constant 80
@@ -112,37 +112,36 @@ push constant 121
 call String.appendChar 2
 call Output.printString 1
 pop temp 0
-label WHILE_EXP1
+label Main.main$WHILE_TRUE$2
 push local 1
 push constant 0
 eq
 not
-if-goto WHILE_END1
+if-goto Main.main$WHILE_FALSE$3
 call Keyboard.keyPressed 0
 pop local 1
-goto WHILE_EXP1
-label WHILE_END1
+goto Main.main$WHILE_TRUE$2
+label Main.main$WHILE_FALSE$3
 push local 1
 pop local 0
-label WHILE_EXP2
+label Main.main$WHILE_TRUE$4
 push local 1
 push constant 0
 eq
 not
 not
-if-goto WHILE_END2
+if-goto Main.main$WHILE_FALSE$5
 call Keyboard.keyPressed 0
 pop local 1
-goto WHILE_EXP2
-label WHILE_END2
+goto Main.main$WHILE_TRUE$4
+label Main.main$WHILE_FALSE$5
 call Output.println 0
 pop temp 0
 push local 0
 push constant 137
 eq
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
+not
+if-goto Main.main$IF_FALSE$6
 push constant 2
 call String.new 1
 push constant 111
@@ -153,12 +152,12 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-push constant 0
-not
+push constant 1
+neg
 pop local 4
-label IF_FALSE0
-goto WHILE_EXP0
-label WHILE_END0
+label Main.main$IF_FALSE$6
+goto Main.main$WHILE_TRUE$0
+label Main.main$WHILE_FALSE$1
 push constant 0
 pop local 4
 push constant 14
@@ -319,11 +318,11 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-label WHILE_EXP3
+label Main.main$WHILE_TRUE$7
 push local 4
 not
 not
-if-goto WHILE_END3
+if-goto Main.main$WHILE_FALSE$8
 push constant 29
 call String.new 1
 push constant 80
@@ -393,9 +392,8 @@ pop temp 0
 push local 0
 push constant 51
 eq
-if-goto IF_TRUE1
-goto IF_FALSE1
-label IF_TRUE1
+not
+if-goto Main.main$IF_FALSE$9
 push constant 2
 call String.new 1
 push constant 111
@@ -406,12 +404,12 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-push constant 0
-not
+push constant 1
+neg
 pop local 4
-label IF_FALSE1
-goto WHILE_EXP3
-label WHILE_END3
+label Main.main$IF_FALSE$9
+goto Main.main$WHILE_TRUE$7
+label Main.main$WHILE_FALSE$8
 push constant 0
 pop local 4
 push constant 14
@@ -530,11 +528,11 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-label WHILE_EXP4
+label Main.main$WHILE_TRUE$10
 push local 4
 not
 not
-if-goto WHILE_END4
+if-goto Main.main$WHILE_FALSE$11
 push constant 36
 call String.new 1
 push constant 80
@@ -615,9 +613,8 @@ push local 2
 call String.length 1
 push constant 4
 eq
-if-goto IF_TRUE2
-goto IF_FALSE2
-label IF_TRUE2
+not
+if-goto Main.main$IF_FALSE$12
 push local 2
 push constant 0
 call String.charAt 2
@@ -641,9 +638,8 @@ call String.charAt 2
 push constant 75
 eq
 and
-if-goto IF_TRUE3
-goto IF_FALSE3
-label IF_TRUE3
+not
+if-goto Main.main$IF_FALSE$13
 push constant 2
 call String.new 1
 push constant 111
@@ -654,13 +650,13 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-push constant 0
-not
+push constant 1
+neg
 pop local 4
-label IF_FALSE3
-label IF_FALSE2
-goto WHILE_EXP4
-label WHILE_END4
+label Main.main$IF_FALSE$13
+label Main.main$IF_FALSE$12
+goto Main.main$WHILE_TRUE$10
+label Main.main$WHILE_FALSE$11
 push constant 0
 pop local 4
 push constant 13
@@ -777,11 +773,11 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-label WHILE_EXP5
+label Main.main$WHILE_TRUE$14
 push local 4
 not
 not
-if-goto WHILE_END5
+if-goto Main.main$WHILE_FALSE$15
 push constant 38
 call String.new 1
 push constant 80
@@ -866,9 +862,8 @@ push local 3
 push constant 32123
 neg
 eq
-if-goto IF_TRUE4
-goto IF_FALSE4
-label IF_TRUE4
+not
+if-goto Main.main$IF_FALSE$16
 push constant 2
 call String.new 1
 push constant 111
@@ -879,12 +874,12 @@ call Output.printString 1
 pop temp 0
 call Output.println 0
 pop temp 0
-push constant 0
-not
+push constant 1
+neg
 pop local 4
-label IF_FALSE4
-goto WHILE_EXP5
-label WHILE_END5
+label Main.main$IF_FALSE$16
+goto Main.main$WHILE_TRUE$14
+label Main.main$WHILE_FALSE$15
 call Output.println 0
 pop temp 0
 push constant 27
